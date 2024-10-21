@@ -128,5 +128,4 @@ app.use('/api/v1/auth', authRoutes);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
-  console.log(`API link at http://80.177.32.233:${port}`)
 });
