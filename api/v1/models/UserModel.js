@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema({
     verified: { type: Boolean, default: false },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
+    phone: {type: Number, required: false },
     auth: { type: authSchema, required: true }, // Embed authentication schema
     subscriptionStatus: { type: String, enum: ['active', 'inactive'], default: 'inactive' },
     deleted: { type: Boolean, default: false }, // Soft delete flag

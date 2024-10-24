@@ -1,9 +1,12 @@
 const express = require('express');
-const authController = require('../controllers/userController'); // Adjust the path as necessary
-const authMiddleware = require('../middleware/authMiddleware'); // Protect routes that require authentication
+const userController = require('../controllers/userController'); // Adjust the path as necessary
+const authTokenMiddleware = require('../middleware/authTokenMiddleware'); // Protect routes that require authentication
 const router = express.Router();
 
 // Add Business Details Route (protected)
-router.post('/addbusiness', authMiddleware, authController.addBusiness);
+router.post('/addshopdetails/:userId', authTokenMiddleware(['Client']), userController.addShopDetails);
+
+// Get Business List and Details Route (protected)
+router.get('/getshopdetails/:userId', authTokenMiddleware(['Client']), userController.getShopDetails);
 
 module.exports = router;

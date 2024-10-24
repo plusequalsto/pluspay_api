@@ -252,7 +252,7 @@ const signIn = async (req, res) => {
         }
 
         // Generate access and refresh tokens for the user
-        const accessToken = jwt.sign({ userId: user._id, userRole: user.role }, process.env.JWT_SECRET, {
+        const accessToken = jwt.sign({ userId: user._id, userRole: user.auth.role }, process.env.JWT_SECRET, {
             expiresIn: '15m', // Set your desired expiration time
         });
         const refreshToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
@@ -317,8 +317,9 @@ const refreshToken = async (req, res) => {
         return res.status(401).json({ message: 'No refresh token provided.' });
     }
 
+    // Validate device type and device token if necessary
     if (deviceType !== 'web') {
-        if (!deviceToken || !deviceType || !refreshToken) {
+        if (!deviceToken || !deviceType) {
             return res.status(400).json({ status: 400, message: 'Invalid credentials' });
         }
 
@@ -339,38 +340,52 @@ const refreshToken = async (req, res) => {
             return res.status(403).json({ message: 'Invalid refresh token.' });
         }
 
-        // Check if the refresh token is about to expire (e.g., within 1 day)
-        const refreshTokenExpiryTime = jwt.decode(refreshToken).exp * 1000;
-        let newRefreshToken = refreshToken;
+        // Generate a new access token
+        const newAccessToken = jwt.sign(
+            { userId: tokenDoc.userId, userRole: tokenDoc.userRole },
+            process.env.JWT_SECRET,
+            { expiresIn: '15m' } // Set your desired expiration time
+        );
 
+        // Update access token and its expiration in the database
+        const newAccessTokenExpiry = Date.now() + (15 * 60 * 1000); // Set expiry to 15 minutes from now
+        await Token.updateOne(
+            { userId: tokenDoc.userId },
+            { accessToken: newAccessToken, expiresAt: newAccessTokenExpiry }
+        );
+
+        // Generate a new refresh token if necessary
+        let newRefreshToken = refreshToken; // Keep the old refresh token
+        const refreshTokenExpiryTime = jwt.decode(refreshToken).exp * 1000;
+
+        // Check if the refresh token is about to expire (e.g., within 1 day)
         if (Date.now() > refreshTokenExpiryTime - (24 * 60 * 60 * 1000)) {
-            // Generate a new refresh token
-            newRefreshToken = jwt.sign({ userId: tokenDoc.userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+            newRefreshToken = jwt.sign(
+                { userId: tokenDoc.userId },
+                process.env.JWT_SECRET,
+                { expiresIn: '7d' } // New refresh token expiration
+            );
+
             await Token.updateOne(
                 { userId: tokenDoc.userId },
                 { refreshToken: newRefreshToken, expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000) }
             );
         }
 
-        // Generate a new access token
-        const newAccessToken = jwt.sign({ userId: tokenDoc.userId, userRole: tokenDoc.userRole }, process.env.JWT_SECRET, {
-            expiresIn: '15m', // Set your desired expiration time
-        });
-
-        await Token.updateOne({ refreshToken: newRefreshToken }, { accessToken: newAccessToken });
-
-        // Save or update the device information if provided
+        // Handle device information if provided
         if (deviceToken && deviceType) {
-            const existingDevice = await Device.findOne({ userId: tokenDoc.userId, token: deviceToken });
+            // Find the device by userId and deviceType
+            const existingDevice = await Device.findOne({ userId: tokenDoc.userId, type: deviceType });
 
             if (existingDevice) {
-                // Update the device type if it is different
-                if (existingDevice.type !== deviceType) {
-                    existingDevice.type = deviceType;
+                // If the existing device token is different, update it
+                if (existingDevice.token !== deviceToken) {
+                    existingDevice.token = deviceToken; // Update the device token
                     await existingDevice.save();
                 }
+                // If the token is the same, do nothing
             } else {
-                // Create a new device entry if none exists
+                // If no device exists for the userId and deviceType, create a new device entry
                 const newDevice = new Device({
                     userId: tokenDoc.userId,
                     token: deviceToken,
@@ -380,6 +395,9 @@ const refreshToken = async (req, res) => {
             }
         }
 
+        console.log('New AccessToken', newAccessToken);
+
+        // Respond with the new tokens
         res.status(200).json({
             status: 200,
             accessToken: newAccessToken,

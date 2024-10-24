@@ -12,7 +12,7 @@ const TokenSchema = new mongoose.Schema({
 // Indexes for better query performance
 TokenSchema.index({ userId: 1 });
 TokenSchema.index({ accessToken: 1 });
-TokenSchema.index({ expiresAt: 1 });
+TokenSchema.index({ refreshToken: 1 });
 
 const Token = mongoose.model('tokens', TokenSchema);
 

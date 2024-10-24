@@ -6,8 +6,9 @@ const xss = require('xss-clean');
 const path = require('path');
 const connectmongoDB = require('./api/config/mongodbConfig.js');
 const authRoutes = require('./api/v1/routes/authRoutes.js')
+const userRoutes = require('./api/v1/routes/userRoutes.js')
+const stripeRoutes =require('./api/v1/routes/stripeRoutes.js')
 dotenv.config();
-const port = process.env.PORT;
 const app = express();
 connectmongoDB();
 
@@ -55,7 +56,8 @@ app.use(
 const corsOptions = {
   origin: [
     'https://qiot-pneumothorax-api-b70842062523.herokuapp.com',
-    'http://80.177.32.233:${port}'
+    'http://80.177.32.233:${port}',
+    'http://localhost:${port}'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -124,8 +126,10 @@ app.get('/api/v1', (req, res) => {
 });
 
 app.use('/api/v1/auth', authRoutes);
-// app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/stripe', stripeRoutes);
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+app.listen(process.env.PORT, () => {
+  console.log(`Server running on port ${process.env.PORT}`);
+  console.log(`Server running on port ${process.env.HEROKU_URL}`);
 });

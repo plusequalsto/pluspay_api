@@ -1,6 +1,6 @@
 const express = require('express');
 const authController = require('../controllers/authController'); // Adjust the path as necessary
-const authMiddleware = require('../middleware/authMiddleware'); // Protect routes that require authentication
+const authTokenMiddleware = require('../middleware/authTokenMiddleware'); // Protect routes that require authentication
 const router = express.Router();
 
 // Sign Up Route
@@ -15,7 +15,7 @@ router.post('/signin', authController.signIn);
 router.post('/refreshtoken', authController.refreshToken);
 
 // Add Business Details Route (protected)
-router.post('/add-business-details', authMiddleware, authController.addBusinessDetails);
+router.post('/add-business-details', authTokenMiddleware(['Client']), authController.addBusinessDetails);
 
 // Sign Out Route (protected)
 router.delete('/signout/:userId', authController.signOut);
