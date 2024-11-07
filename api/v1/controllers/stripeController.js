@@ -50,6 +50,7 @@ const addStripeAccount = async (req, res) => {
                 registration_number: shopDetails[0].companyhouseregistrationNumber,
                 address: {
                     line1: shopDetails[0].contactInfo.address.street,
+                    line2: '',
                     city: shopDetails[0].contactInfo.address.city,
                     postal_code: shopDetails[0].contactInfo.address.postcode,
                     state: '',
@@ -93,6 +94,7 @@ const addStripeAccount = async (req, res) => {
             //     },
             //     address: {
             //         line1: shopDetails[0].contactInfo.address.street,
+            //         line2: '',
             //         city: shopDetails[0].contactInfo.address.city,
             //         postal_code: shopDetails[0].contactInfo.address.postcode,
             //         state: '',
@@ -100,6 +102,7 @@ const addStripeAccount = async (req, res) => {
             //     },
             //     registered_address: {
             //         line1: shopDetails[0].contactInfo.address.street,
+            //         line2: '',
             //         city: shopDetails[0].contactInfo.address.city,
             //         postal_code: shopDetails[0].contactInfo.address.postcode,
             //         state: '',
@@ -207,8 +210,7 @@ const addStripeAccount = async (req, res) => {
                 first_name: userDetails.firstName,
                 last_name: userDetails.lastName,
                 email: userDetails.auth.email,
-                // phone: userDetails.contactInfo.phone || '',
-
+                nationality: getCountryCode(userDetails[0].contactInfo.address.country),
                 phone: '',
                 gender: '',
                 id_number: '1234567',
@@ -217,15 +219,9 @@ const addStripeAccount = async (req, res) => {
                     month: '08',
                     year: '1993',
                 },
-                // address: {
-                //     line1: userDetails.contactInfo.address.street,
-                //     city: userDetails.contactInfo.address.city,
-                //     postal_code: userDetails.contactInfo.address.postcode,
-                //     state: '',
-                //     country: getCountryCode(userDetails.contactInfo.address.country) // Use 2-letter country code (GB for UK)
-                // },
                 address: {
                     line1: '',
+                    line2: '',
                     city: '',
                     postal_code: '',
                     state: '',
@@ -247,15 +243,9 @@ const addStripeAccount = async (req, res) => {
                 //         user_agent: 'Mozilla/5.0',
                 //     },
                 // },
-                // registered_address: {
-                //     line1: userDetails.contactInfo.address.street,
-                //     city: userDetails.contactInfo.address.city,
-                //     postal_code: userDetails.contactInfo.address.postcode,
-                //     state: '',
-                //     country: getCountryCode(userDetails.contactInfo.address.country) // Use 2-letter country code (GB for UK)
-                // },
                 registered_address: {
                     line1: '',
+                    line2: '',
                     city: '',
                     postal_code: '',
                     state: '',
